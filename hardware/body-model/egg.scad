@@ -1,6 +1,6 @@
 
 /* --- settings --- */
-target = "composition2"; /* composition, composition2, bottom, middle, top, rack, egg, dev */
+target = "composition"; /* composition, composition2, bottom, middle, top, rack, egg, dev */
 release = false;
 $fn = release ? 120 : 30;
 k = 1.0;
@@ -8,7 +8,7 @@ k = 1.0;
 /* egg */
 egg_length = 110 * k;
 egg_w = 12 * k;
-egg_wall_w = 5 * k;
+egg_wall_w = 2.5 * k;
 
 /* dividing */
 dh1 = 13 * k;
@@ -85,6 +85,7 @@ module main() {
 }
 
 module egg_bottom() {
+    screw_positions_degree = [90, -90];
     dh1_r = egg_eq(dh1 - egg_length/2, egg_length);
     // egg bottom part
     difference() {
@@ -94,13 +95,17 @@ module egg_bottom() {
         inner_egg();
         
         // cut screw hole
-        rotate([0, 0, -90])
-        translate([dh1_r, 0, -egg_length / 2])
-        screw_component(screw_part_diff=true);
+        union() {
+            for (pos_d = screw_positions_degree) {
+                rotate([0, 0, pos_d])
+                translate([dh1_r, 0, -egg_length / 2])
+                screw_component(screw_part_diff=true);
+            }
+        }
         
         // cut rack nest in case it might touch the walls
         translate([0, rack_depth_delta, -egg_length/2 + rack_level_delta])
-        board_rack(show_dev_board=false);
+        board_rack(show_dev_board=false, stand_k=1.2);
         
     }
     
@@ -110,30 +115,43 @@ module egg_bottom() {
         
         // cut rack nest from solid bottom
         translate([0, rack_depth_delta, -egg_length/2 + rack_level_delta])
-        board_rack(show_dev_board=false);
+        board_rack(show_dev_board=false, stand_k=1.2);
         
         // cut screw hole
-        rotate([0, 0, -90])
-        translate([dh1_r, 0, -egg_length / 2])
-        screw_component(screw_part_diff=true);
+        union() {
+            for (pos_d = screw_positions_degree) {
+                rotate([0, 0, pos_d])
+                translate([dh1_r, 0, -egg_length / 2])
+                screw_component(screw_part_diff=true);
+            }
+        }
     }
 
     // screw
     difference() {
-        rotate([0, 0, -90])
-        translate([dh1_r, 0, -egg_length / 2])
-        screw_component(screw_part=true);
+        union() {
+            for (pos_d = screw_positions_degree) {
+                rotate([0, 0, pos_d])
+                translate([dh1_r, 0, -egg_length / 2])
+                screw_component(screw_part=true);
+            }
+        }
         
         outer_thick_egg(start = 0, end = dh1);
         
         // cut screw hole
-        rotate([0, 0, -90])
-        translate([dh1_r, 0, -egg_length / 2])
-        screw_component(screw_part_diff=true);
+        union() {
+            for (pos_d = screw_positions_degree) {
+                rotate([0, 0, pos_d])
+                translate([dh1_r, 0, -egg_length / 2])
+                screw_component(screw_part_diff=true);
+            }
+        }
     }
 }
 
 module egg_middle() {
+    screw_positions_degree = [90, -90];
     difference() {
         egg(length = egg_length, start = dh1, end = dh2);
         
@@ -143,9 +161,13 @@ module egg_middle() {
     // screw
     dh1_r = egg_eq(dh1 - egg_length/2, egg_length);
     difference() {
-        rotate([0, 0, -90])
-        translate([dh1_r, 0, -egg_length / 2 + dh1])
-        screw_component(thread_insert_part=true);
+        union() {
+            for (pos_d = screw_positions_degree) {
+                rotate([0, 0, pos_d])
+                translate([dh1_r, 0, -egg_length / 2 + dh1])
+                screw_component(thread_insert_part=true);
+            }
+        }
         
         outer_thick_egg(start = dh1, end = dh2);
     }
@@ -163,8 +185,8 @@ module screw_component(screw_part=false, thread_insert_part=false, screw_part_di
     insert_d = 4.2 * k;
     insert_h = 5.7 * k;
     insert_part_h = insert_h + 1 * k;
-    bolt_thread_d = 3.5 * k;
-    bolt_hat_d = 4.8 * k;
+    bolt_thread_d = 3.2 * k;
+    bolt_hat_d = 5.7 * k;
     edge_distance = 7 * k;
     over_edge_spare_w = 4 * k; //8
     
@@ -205,7 +227,7 @@ module inner_egg() {
 }
 
 module outer_thick_egg(start, end) {
-    thick_length = egg_length + egg_wall_w * 6;
+    thick_length = egg_length + egg_wall_w * 11;
     length_delta = (thick_length - egg_length)/2;
     difference() {
         egg(length = thick_length, start=start + length_delta - 1, end=end + 1 + length_delta);
@@ -239,7 +261,7 @@ function egg_eq(x, length) =
     );
 
 
-module board_rack(show_dev_board=true) {
+module board_rack(show_dev_board=true, stand_k=1) {
     board_holes_data = board_holes();
     holes_w = board_holes_data[0];
     holes_h = board_holes_data[1];
@@ -295,44 +317,40 @@ module board_rack(show_dev_board=true) {
     // pins
     translate([-holes_w/2, rack_t, rack_h/2-holes_h/2+bottom_stand_h])
     rotate([-90, 0, 0])
-    cylinder(h = board_t, d = hole_d);
+    cylinder(h = board_t + 0.7*k, d = hole_d);
     
     translate([-holes_w/2, rack_t, rack_h/2+holes_h/2+bottom_stand_h])
     rotate([-90, 0, 0])
-    cylinder(h = board_t, d = hole_d);
+    cylinder(h = board_t + 0.7*k, d = hole_d);
     
     translate([holes_w/2, rack_t, rack_h/2-holes_h/2+bottom_stand_h])
     rotate([-90, 0, 0])
-    cylinder(h = board_t, d = hole_d);
+    cylinder(h = board_t + 0.7*k, d = hole_d);
     
     translate([holes_w/2, rack_t, rack_h/2+holes_h/2+bottom_stand_h])
     rotate([-90, 0, 0])
-    cylinder(h = board_t, d = hole_d);
+    cylinder(h = board_t + 0.7*k, d = hole_d);
     
     // bottom stand
-    translate([-hole_d/2 - holes_w/2, 0, 0])
+    translate([-hole_d/2 - holes_w*stand_k/2, 0, 0])
     union() {
         translate([0, 0, 0])
-        cube([hole_d, rack_t, bottom_stand_h]);
+        cube([hole_d*stand_k, rack_t*stand_k, bottom_stand_h]);
         
-        translate([holes_w, 0, 0])
-        cube([hole_d, rack_t, bottom_stand_h]);
+        translate([holes_w*stand_k, 0, 0])
+        cube([hole_d*stand_k, rack_t*stand_k, bottom_stand_h]);
         
-        cube([holes_w, rack_t, hole_d]);
+        cube([holes_w*stand_k, rack_t*stand_k, hole_d*stand_k]);
     }
-    
 
-    // side standas
+    // side stands
     for (x_mirror = [0, 1]) {
         mirror([x_mirror, 0, 0])
-        translate([rack_wi/2+hole_d, 0, 0])
+        translate([rack_wi/2+hole_d*stand_k, 0, 0])
         rotate([0, -90, 0])
-        linear_extrude(height = hole_d)
+        linear_extrude(height = hole_d*stand_k)
         difference() {
-            polygon([[0, 0], [side_stand_base_l + rack_t, 0], [0, side_stand_base_l + rack_t], [0, 0]]);
-            
-            //offset(delta = -hole_d)
-            //polygon([[0, 0], [side_stand_base_l + rack_t, 0], [0, side_stand_base_l + rack_t], [0, 0]]);
+            polygon([[0, 0], [(side_stand_base_l + rack_t)*stand_k, 0], [0, (side_stand_base_l + rack_t)*stand_k], [0, 0]]);
         }
     }
 
