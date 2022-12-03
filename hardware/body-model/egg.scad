@@ -6,13 +6,13 @@ $fn = release ? 120 : 30;
 k = 1.0;
 
 /* egg */
-egg_length = 110 * k;
+egg_length = 120 * k;
 egg_w = 12 * k;
 egg_wall_w = 2.5 * k;
 
 /* dividing */
-dh1 = 13 * k;
-dh2 = egg_length - 13 * k;
+dh1 = 14 * k; // 13
+dh2 = egg_length - 13 * k; //13
 
 /* deltas */
 bottom_solid_plate_h = 9;//7
@@ -54,6 +54,7 @@ module main() {
     }
     
     if (target == "bottom") {
+        rotate([0, 180, 0])
         egg_bottom();
     }
     
@@ -182,16 +183,16 @@ module egg_top() {
 }
 
 module screw_component(screw_part=false, thread_insert_part=false, screw_part_diff=false) {
-    insert_d = 4.2 * k;
+    insert_d = 4.4 * k;
     insert_h = 5.7 * k;
     insert_part_h = insert_h + 1 * k;
-    bolt_thread_d = 3.2 * k;
+    bolt_thread_d = 3.8 * k;
     bolt_hat_d = 5.7 * k;
     edge_distance = 7 * k;
     over_edge_spare_w = 4 * k; //8
     
     w = bolt_hat_d * 1.5 + edge_distance;
-    l = bolt_hat_d * 1.5;
+    l = bolt_hat_d * 2;
     
     if (screw_part) {
         difference() {
@@ -227,7 +228,7 @@ module inner_egg() {
 }
 
 module outer_thick_egg(start, end) {
-    thick_length = egg_length + egg_wall_w * 11;
+    thick_length = egg_length + egg_wall_w * 12;
     length_delta = (thick_length - egg_length)/2;
     difference() {
         egg(length = thick_length, start=start + length_delta - 1, end=end + 1 + length_delta);
