@@ -2,7 +2,7 @@
 /* --- settings --- */
 target = "composition"; /* composition, composition2, bottom, middle, top, rack, egg, dev */
 release = false;
-$fn = release ? 120 : 30;
+$fn = release ? 300 : 30;
 k = 1.0;
 
 /* egg */
@@ -67,6 +67,7 @@ module main() {
     }
     
     if (target == "rack") {
+        rotate([90, 0, 0])
         board_rack();
     }
     
@@ -77,8 +78,8 @@ module main() {
     if (target == "dev") {
         egg_bottom();
         
-        translate([0, rack_depth_delta, -egg_length/2 + rack_level_delta])
-        board_rack();
+        //translate([0, rack_depth_delta, -egg_length/2 + rack_level_delta])
+        //board_rack();
         
         egg_top();
         //egg_middle();
@@ -149,6 +150,26 @@ module egg_bottom() {
             }
         }
     }
+
+    // connection skirt
+    connection_skirt_d = egg_eq(-(egg_length - egg_wall_w)/2 + dh1, egg_length - egg_wall_w) * 2;
+    translate([0, 0, -egg_length/2 + dh1])
+    difference() {
+        cylinder(h = 2*k, d = connection_skirt_d);
+
+        // cut in center
+        translate([0, 0, -1])
+        cylinder(h = 2*k+2, d = connection_skirt_d - 2*k);
+        
+        // cut at screw parts
+        union() {
+            for (pos_d = screw_positions_degree) {
+                rotate([0, 0, pos_d])
+                translate([dh1_r, 0, 0])
+                screw_component(screw_part=true);
+            }
+        }
+    }
 }
 
 module egg_middle() {
@@ -179,6 +200,41 @@ module egg_top() {
         egg(length = egg_length, start = dh2);
         
         inner_egg();
+    }
+    
+    // antenna holder
+    h_from_top = 4 * k;
+    h_holder = egg_length - dh2 - h_from_top;
+    d = egg_eq(egg_length/2 - h_from_top, egg_length)*2;
+    
+    translate([0, 0, egg_length/2-h_from_top-h_holder])
+    difference() {
+        union() {
+            cylinder(h = h_holder, d = d);
+            
+            // skirt
+            cylinder(h = 1*k, d = d+2*k);
+        }
+        
+        // cut center
+        translate([0, 0, -1])
+        cylinder(h = h_holder+2*k, d = d - 4*k);
+    }
+    
+    // connection skirt
+    connection_skirt_d = egg_eq(-egg_length/2 + dh2, egg_length - egg_wall_w) * 2;
+    translate([0, 0, -egg_length/2 + dh2])
+    rotate([180, 0, 0])
+    difference() {
+        cylinder(h = 2*k, d = connection_skirt_d);
+        
+        // cut in center
+        translate([0, 0, -1])
+        cylinder(h = 2*k+2, d = connection_skirt_d - 2*k);
+        
+        // cut on sides
+        translate([-(connection_skirt_d+2)/2, -connection_skirt_d*0.5/2, 0])
+        cube([connection_skirt_d+2, connection_skirt_d*0.5, 2*k+2]);
     }
 }
 
