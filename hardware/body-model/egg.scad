@@ -2,7 +2,7 @@
 /* --- settings --- */
 target = "composition"; /* composition, composition2, bottom, middle, top, rack, egg, dev */
 release = false;
-$fn = release ? 300 : 30;
+$fn = release ? 120 : 30;
 k = 1.0;
 
 /* egg */
@@ -76,19 +76,32 @@ module main() {
     }
     
     if (target == "dev") {
+        //charger_board(with_extension=true);
         egg_bottom();
         
-        //translate([0, rack_depth_delta, -egg_length/2 + rack_level_delta])
-        //board_rack();
         
-        egg_top();
+        translate([0, rack_depth_delta, -egg_length/2 + rack_level_delta])
+        board_rack();
+        
+        //egg_top();
         //egg_middle();
     }
 }
 
 module egg_bottom() {
-    screw_positions_degree = [90, -90];
-    dh1_r = egg_eq(dh1 - egg_length/2, egg_length);
+    //screw_positions_degree = [90, -90];
+    //dh1_r = egg_eq(dh1 - egg_length/2, egg_length);
+    charger_card_h = dh1 - 7*k;//bottom_solid_plate_h;
+    charger_card_h_r = egg_eq(charger_card_h - egg_length/2, egg_length);
+    charger_board_rotation_vector = [45, 0, 180];
+    
+    if (!release) {
+        %
+        translate([0, charger_card_h_r, -egg_length / 2 + charger_card_h])
+        rotate(charger_board_rotation_vector)
+        charger_board(with_extension=false);            
+    }
+    
     // egg bottom part
     difference() {
         egg(length = egg_length, end = dh1);
@@ -97,6 +110,7 @@ module egg_bottom() {
         inner_egg();
         
         // cut screw hole
+        /*
         union() {
             for (pos_d = screw_positions_degree) {
                 rotate([0, 0, pos_d])
@@ -104,11 +118,16 @@ module egg_bottom() {
                 screw_component(screw_part_diff=true);
             }
         }
+        */
         
         // cut rack nest in case it might touch the walls
         translate([0, rack_depth_delta, -egg_length/2 + rack_level_delta])
         board_rack(show_dev_board=false, stand_k=1.2);
         
+        // cut charger card
+        translate([0, charger_card_h_r, -egg_length / 2 + charger_card_h])
+        rotate(charger_board_rotation_vector)
+        charger_board(with_extension=true);
     }
     
     // solid bottom
@@ -118,7 +137,7 @@ module egg_bottom() {
         // cut rack nest from solid bottom
         translate([0, rack_depth_delta, -egg_length/2 + rack_level_delta])
         board_rack(show_dev_board=false, stand_k=1.2);
-        
+        /*
         // cut screw hole
         union() {
             for (pos_d = screw_positions_degree) {
@@ -127,9 +146,16 @@ module egg_bottom() {
                 screw_component(screw_part_diff=true);
             }
         }
+        */
+        
+        // cut charger card
+        translate([0, charger_card_h_r, -egg_length / 2 + charger_card_h])
+        rotate(charger_board_rotation_vector)
+        charger_board(with_extension=true);
     }
 
     // screw
+    /*
     difference() {
         union() {
             for (pos_d = screw_positions_degree) {
@@ -140,7 +166,6 @@ module egg_bottom() {
         }
         
         outer_thick_egg(start = 0, end = dh1);
-        
         // cut screw hole
         union() {
             for (pos_d = screw_positions_degree) {
@@ -150,18 +175,24 @@ module egg_bottom() {
             }
         }
     }
+    */
 
     // connection skirt
-    connection_skirt_d = egg_eq(-(egg_length - egg_wall_w)/2 + dh1, egg_length - egg_wall_w) * 2;
-    translate([0, 0, -egg_length/2 + dh1])
+    connection_skirt_d = (egg_eq(-(egg_length - egg_wall_w)/2 + dh1, egg_length - egg_wall_w) - 0.5*k) * 2;
+    translate([0, 0, -egg_length/2 + dh1 - 1*k])
     difference() {
-        cylinder(h = 2*k, d = connection_skirt_d);
+        
+        cylinder(h = 3*k, d = connection_skirt_d);
 
         // cut in center
         translate([0, 0, -1])
-        cylinder(h = 2*k+2, d = connection_skirt_d - 2*k);
+        cylinder(h = 3*k+2, d = connection_skirt_d - 2*k);
+
+        translate([0, 0, -(-egg_length/2 + dh1 - 1*k)])
+        outer_thick_egg(start = 0, end = dh1);
         
         // cut at screw parts
+        /*
         union() {
             for (pos_d = screw_positions_degree) {
                 rotate([0, 0, pos_d])
@@ -169,11 +200,12 @@ module egg_bottom() {
                 screw_component(screw_part=true);
             }
         }
+        */
     }
 }
 
 module egg_middle() {
-    screw_positions_degree = [90, -90];
+    //screw_positions_degree = [90, -90];
     difference() {
         egg(length = egg_length, start = dh1, end = dh2);
         
@@ -181,6 +213,7 @@ module egg_middle() {
     }
     
     // screw
+    /*
     dh1_r = egg_eq(dh1 - egg_length/2, egg_length);
     difference() {
         union() {
@@ -193,6 +226,7 @@ module egg_middle() {
         
         outer_thick_egg(start = dh1, end = dh2);
     }
+    */
 }
 
 module egg_top() {
@@ -205,32 +239,32 @@ module egg_top() {
     // antenna holder
     h_from_top = 4 * k;
     h_holder = egg_length - dh2 - h_from_top;
-    d = egg_eq(egg_length/2 - h_from_top, egg_length)*2;
+    antenna_d = egg_eq(egg_length/2 - h_from_top, egg_length)*2;
     
     translate([0, 0, egg_length/2-h_from_top-h_holder])
     difference() {
         union() {
-            cylinder(h = h_holder, d = d);
+            cylinder(h = h_holder, d = antenna_d);
             
             // skirt
-            cylinder(h = 1*k, d = d+2*k);
+            cylinder(h = 1*k, d = antenna_d+3*k);
         }
         
         // cut center
         translate([0, 0, -1])
-        cylinder(h = h_holder+2*k, d = d - 4*k);
+        cylinder(h = h_holder+3*k, d = antenna_d - 4*k);
     }
     
     // connection skirt
-    connection_skirt_d = egg_eq(-egg_length/2 + dh2, egg_length - egg_wall_w) * 2;
-    translate([0, 0, -egg_length/2 + dh2])
+    connection_skirt_d = (egg_eq(-egg_length/2 + dh2, egg_length - egg_wall_w) - 0.5 * k) * 2;
+    translate([0, 0, -egg_length/2 + dh2 + 1*k])
     rotate([180, 0, 0])
     difference() {
-        cylinder(h = 2*k, d = connection_skirt_d);
+        cylinder(h = 3*k, d = connection_skirt_d);
         
         // cut in center
         translate([0, 0, -1])
-        cylinder(h = 2*k+2, d = connection_skirt_d - 2*k);
+        cylinder(h = 3*k+3, d = connection_skirt_d - 2*k);
         
         // cut on sides
         translate([-(connection_skirt_d+2)/2, -connection_skirt_d*0.5/2, 0])
@@ -457,6 +491,31 @@ module board() {
 
 //[holes_w, holes_h, hole_d];
 function board_holes() = [27 * k, 82.5 * k, 3 * k];
+
+module charger_board(with_extension=false) {
+    l = 28 * k + 0.5 * k;
+    w = 17 * k + 0.5 * k;
+    h = 3 * k + 0.5 * k;
+    lc = 7.4 * k + 0.5 * k;
+    wc = 9 * k + 0.5 * k;
+    hbc = 4.82 * k; 
+    lc_delta = 1.5 * k;
+    hc_delta = 1.48 * k;
+    hc = hbc - hc_delta;
+    
+    h_with_extension = with_extension ? hbc : h;
+    lc_with_extension = with_extension ? lc + 50 : lc;
+    wc_with_extension = with_extension ? wc/*10.51*k*/ : wc;
+    hc_with_extension = with_extension ? hc/*5.77*k + 0.5*k*/ : hc;
+    
+    // board
+    translate([-w/2, lc_delta, -hc_delta])
+    cube([w, l, h_with_extension]);
+    
+    // connector
+    translate([-wc_with_extension/2,  - lc_with_extension + lc, 0])
+    cube([wc_with_extension, lc_with_extension, hc_with_extension]);
+}
 
 function arc_oval_points(center_x, center_y, r1, r2, a0, a1) =
   [for (a=[a0:(a1-a0)/100:a1]) [center_x + cos(a) * r1, center_y + sin(a) * r2]];
