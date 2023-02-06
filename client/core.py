@@ -12,8 +12,8 @@ MAX_LOOP_ITERATION = 1000
 
 CONTROL_MODE_ACTIVATION_DELAY_MS = 5000
 
-TOUCH_SENSOR_MAX_COUNTER = 120
-TOUCH_SENSOR_THRESHOLD = 15
+TOUCH_SENSOR_MAX_COUNTER = 300
+TOUCH_SENSOR_THRESHOLD = 7#6, 12
 TOUCH_MAX_SATURATION = 200
 
 PIN_NEOPIXEL = Pin(15, Pin.OUT)
@@ -22,10 +22,15 @@ PIN_ANTENNA_TX = Pin(16, Pin.OUT)
 PIN_ANTENNA_RX = Pin(17, Pin.IN)
 PIN_CONTROL_BUTTON = Pin(13, Pin.IN)
 
+NEO_PIXEL_QUANTITY = 2
+
 #########################################################
 # data model
 #########################################################
 
+
+class NeoPixelSettings:
+    colors = []
 
 class Lights:
     enabled = False
@@ -114,7 +119,8 @@ class State:
 
 
 # light up towards saturation
-def lights_touch(s: State) -> tuple:
+def lights_touch(s: State) -> NeoPixelSettings:
+    # todo: introduce extendable structure in terms of number of pixels, e.g. array of pixes, event it is of the only element
     # saturation 0.0..1.0
     saturation_k = s.touch_sensor.saturation / TOUCH_MAX_SATURATION
     color = s.current_settings.local_color
@@ -123,11 +129,18 @@ def lights_touch(s: State) -> tuple:
     overal_range = max_reduce_delta + max_increase_delta
     target_position = overal_range * saturation_k
     delta = 0
+    # todo: for dimming color (reduce brightness, multiply by k < 1.0)
     if target_position <= max_reduce_delta:
         delta = -(max_reduce_delta - target_position)
     else:
         delta = target_position - max_reduce_delta
-    return (round(color[0] + delta), round(color[1] + delta), round(color[2] + delta))
+    neo_pixel_settings = NeoPixelSettings()
+    colors = []
+    for _c in range(1, NEO_PIXEL_QUANTITY):
+        colors.append((round(color[0] + delta), round(color[1] + delta), round(color[2] + delta)))
+    neo_pixel_settings.colors = colors
+    return neo_pixel_settings
+    #return (round(color[0] + delta), round(color[1] + delta), round(color[2] + delta))
 
 
 def __signum(x):
@@ -266,7 +279,7 @@ def wifi_setup_client(s: State):
         )
         s.network.connection_in_progress = True
 
-    # todo retry logic, e.g. connection is in progress to long
+    # todo retry logic, e.g. connection is in progress too long
     #print('network config:', wlan.ifconfig())
     #return
 
@@ -332,7 +345,7 @@ def controller(s: State):
     if s.touch_sensor.enabled:
         if s.touch_sensor.counter > TOUCH_SENSOR_THRESHOLD:
             if s.touch_sensor.saturation < TOUCH_MAX_SATURATION:
-                s.touch_sensor.saturation = s.touch_sensor.saturation + 10
+                s.touch_sensor.saturation = s.touch_sensor.saturation + 50
         else:
             if s.touch_sensor.saturation > 0:
                 s.touch_sensor.saturation = s.touch_sensor.saturation - 1
