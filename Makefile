@@ -1,4 +1,5 @@
-BUILD_DOCKER = docker run -v "$(CURDIR)"\:/build --workdir /build --user $(id -u):$(id -g) nantipov/egg-build:latest
+#BUILD_DOCKER = docker run -v "$(CURDIR)"\:/build --workdir /build nantipov/egg-build:latest
+BUILD_DOCKER = build_toolchain_docker/docker_run.sh
 
 MPY = mpy-cross
 CARGO = cargo
@@ -19,7 +20,7 @@ client:
 	$(MPY) client/core.py -o client/build/core.mpy
 
 server:
-	@echo ">>> Build serer"
+	@echo ">>> Build server"
 	cd server; $(CARGO) build --release
 
 web:

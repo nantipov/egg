@@ -9,6 +9,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
 
 RUN apt-get install -y python3 openscad nodejs
 
+#USER 999
+
 ## MicroPython toolchain
 RUN mkdir -p "${TOOLS_DIR}" && \
     cd "${TOOLS_DIR}" && \
@@ -22,8 +24,19 @@ RUN mkdir -p "${TOOLS_DIR}" && \
 RUN mpy-cross --version
 
 ## Rust toolchain
+ARG RUST_DIR="${TOOLS_DIR}/rust"
+RUN mkdir -p "${RUST_DIR}"
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --quiet --profile minimal --no-modify-path
-ENV PATH=${PATH}:/root/.cargo/bin
+RUN cd /root && cp -r .cargo/ "${RUST_DIR}/" && cp -r .rustup/ "${RUST_DIR}/"
+RUN rm -r /root/.cargo && /root/.rustup
+#ENV PATH=${PATH}:/root/.cargo/bin
+ENV PATH="${PATH}:${RUST_DIR}/.cargo/bin"
+#RUN cd /root/.cargo/bin && chmod a+x *
+RUN ls -all "${RUST_DIR}"
+RUN ls -all "${RUST_DIR}/.cargo"
+RUN ls -all "${RUST_DIR}/.rustup"
+ENV CARGO_HOME="${RUST_DIR}/.cargo"
+ENV RUSTUP_HOME="${RUST_DIR}/.rustup"
 RUN rustup --version
 
 ## Node
@@ -34,4 +47,4 @@ RUN yarn --version
 ## Openscad
 RUN openscad --version
 
-USER 999
+
