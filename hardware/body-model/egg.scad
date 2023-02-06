@@ -1,6 +1,6 @@
 
 /* --- settings --- */
-target = "composition"; /* composition, composition2, bottom, middle, top, rack, egg, dev */
+target = "top"; /* composition, composition2, bottom, middle, top, rack, egg, dev */
 release = false;
 $fn = release ? 120 : 30;
 k = 1.0;
@@ -247,7 +247,7 @@ module egg_top() {
             cylinder(h = h_holder, d = antenna_d);
             
             // skirt
-            cylinder(h = 1*k, d = antenna_d+3*k);
+            //cylinder(h = 1*k, d = antenna_d+3*k);
         }
         
         // cut center
@@ -267,8 +267,8 @@ module egg_top() {
         cylinder(h = 3*k+3, d = connection_skirt_d - 2*k);
         
         // cut on sides
-        translate([-(connection_skirt_d+2)/2, -connection_skirt_d*0.5/2, 0])
-        cube([connection_skirt_d+2, connection_skirt_d*0.5, 2*k+2]);
+        //translate([-(connection_skirt_d+2)/2, -connection_skirt_d*0.5/2, 0])
+        //cube([connection_skirt_d+2, connection_skirt_d*0.5, 2*k+2]);
     }
 }
 
