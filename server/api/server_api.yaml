@@ -1,0 +1,132 @@
+openapi: 3.0.3
+info:
+  title: Egg API
+  description: |-
+    Binded lamps API
+  version: 0.0.1
+servers:
+  - url: https://petstore3.swagger.io/api/v3
+  - url: https://nantipov.org/egg/api
+tags:
+  - name: read
+    description: Read
+  - name: write
+    description: Write
+paths:
+  /events:
+    get:
+      tags:
+        - read
+      summary: Pulls an event
+      description: |-
+        Returns the next event to consume
+      parameters:
+        - $ref: '#/components/parameters/X-Client-Id'
+        - $ref: '#/components/parameters/X-Device-Id'
+      responses:
+        '200':
+          description: An event is accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+    post:
+      tags:
+        - write
+      summary: Posts new event from a device
+      description: Posts a new event from a device
+      parameters:
+        - $ref: '#/components/parameters/X-Client-Id'
+        - $ref: '#/components/parameters/X-Device-Id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+        required: true
+      responses:
+        '202':
+          description: An event is accepted
+  /events/{event-id}/commits:
+    post:
+      tags:
+        - write
+      summary: Commits consumed event
+      description: Commits consumed event in order to mark it as processed
+      parameters:
+        - name: event-id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - $ref: '#/components/parameters/X-Client-Id'
+        - $ref: '#/components/parameters/X-Device-Id'
+      responses:
+        '204':
+          description: An event is marked as consumed
+        '409':
+          description: An event cannot be marked as consumed
+  /clients:
+    post:
+      tags:
+        - write
+      summary: Adds new client
+      description: Adds new pair of client identifier and divice identifier
+      parameters:
+        - $ref: '#/components/parameters/X-Client-Id'
+        - $ref: '#/components/parameters/X-Device-Id'
+      responses:
+        '204':
+          description: New client is has been registered
+  /nests:
+    post:
+      tags:
+        - write
+      summary: Creates a new nest
+      description: Creates a new empty nest
+      responses:
+        '204':
+          description: New client is has been registered
+components:
+  parameters:
+    X-Client-Id:
+      name: X-Client-Id
+      description: Assigned client identifier
+      in: header
+      schema:
+        type: string
+      required: true
+    X-Device-Id:
+      name: X-Device-Id
+      description: |-
+        Device identifier, e.g. Mac Address
+      in: header
+      schema:
+        type: string
+      required: true
+  schemas:
+    Color:
+      type: object
+      properties:
+        red:
+          type: integer
+        green:
+          type: integer
+        blue:
+          type: integer
+      required:
+        - red
+        - green
+        - blue
+    Event:
+      type: object
+      properties:
+        event_type:
+          type: string
+          x-extensible-enum:
+            - TOUCH_BROADCAST
+        color:
+          $ref: '#/components/schemas/Color'
+      required:
+        - event_type
