@@ -8,12 +8,6 @@ import (
 	"net/http"
 )
 
-func Start() {
-	// todo: add heath check
-	http.HandleFunc("/events", handleEvents)
-	http.ListenAndServe(":8080", nil)
-}
-
 func handleEvents(w http.ResponseWriter, req *http.Request) {
 	if req.Method == "GET" {
 		if auth(w, req) {
@@ -28,26 +22,24 @@ func handleEvents(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// todo: extract x-client-id and x-devide-id and check the pair exis
-func auth(w http.ResponseWriter, req *http.Request) bool {
-	clientId, deviceId := extractAuthData(req)
-	if len(clientId) == 0 || len(deviceId) == 0 {
-		w.WriteHeader(401)
-		return false
-	}
-	return true
-}
-
 func getEvent(w http.ResponseWriter, req *http.Request) {
-	event := services.GetEvent("a")
-	w.WriteHeader(200)
-	responseData, err := json.Marshal(event)
-	if err != nil {
+	clientId, _ := extractAuthData(req)
+	event, serviceErr := services.GetNextOutputEvent(clientId)
+	if serviceErr != nil {
 		w.WriteHeader(500)
-		log.Printf("could not serialize output: %s\n", err.Error())
+		log.Printf("could not retrieve event: %s\n", serviceErr.Error())
 	} else {
-		w.Header().Add("content-type", "application/json") // todo: constant
-		fmt.Fprint(w, string(responseData))
+		responseData, err := json.Marshal(event)
+		if err != nil {
+			w.WriteHeader(500)
+			log.Printf("could not serialize output: %s\n", err.Error())
+		} else if event == nil {
+			w.WriteHeader(404)
+		} else {
+			w.WriteHeader(200)
+			w.Header().Add("content-type", "application/json") // todo: constant
+			fmt.Fprint(w, string(responseData))
+		}
 	}
 }
 
@@ -69,8 +61,6 @@ func addEvent(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func extractAuthData(req *http.Request) (string, string) {
-	clientId := req.Header.Get("x-client-id")
-	deviceId := req.Header.Get("x-device-id")
-	return clientId, deviceId
+func commitEvent(w http.ResponseWriter, req *http.Request) {
+
 }

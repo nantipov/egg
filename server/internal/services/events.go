@@ -6,11 +6,18 @@ type Event struct {
 	EventType string
 }
 
-func GetEvent(clientId string) *Event {
-	db.GetEvents(clientId)
-
-	return &Event{
-		EventType: "Hey",
+func GetNextOutputEvent(clientId string) (*Event, error) {
+	eventEntity, err := db.GetNextOutputEvent(clientId)
+	if err != nil {
+		return nil, err
+	}
+	if eventEntity != nil {
+		event := &Event{
+			EventType: eventEntity.EventType, //todo all fields
+		}
+		return event, nil
+	} else {
+		return nil, nil
 	}
 }
 

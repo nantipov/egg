@@ -25,11 +25,13 @@ paths:
         - $ref: '#/components/parameters/X-Device-Id'
       responses:
         '200':
-          description: An event is accepted
+          description: An event returned
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Event'
+        '404':
+          description: No events to consume for this client
     post:
       tags:
         - write

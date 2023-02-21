@@ -1,10 +1,10 @@
 package db
 
 const (
-	insertEventStatement                  = "INSERT INTO client_event (event_type, client_id, is_input, color) VALUES (?, ?, ?, ?)"
-	updateProcessedEventStatement         = "UPDATE client_event SET is_processed = true WHERE id = ?"
-	fetchUnprocessedInputEventsStatement  = "SELECT id, event_type, client_id, color, is_input FROM client_event WHERE is_input AND NOT is_processed"
-	fetchUnprocessedOutputEventsStatement = "SELECT id, event_type, client_id, color, is_input FROM client_event WHERE NOT is_input AND NOT is_processed"
+	insertEventStatement                     = "INSERT INTO client_event (event_type, client_id, is_input, color) VALUES (?, ?, ?, ?)"
+	updateProcessedEventStatement            = "UPDATE client_event SET is_processed = true WHERE id = ?"
+	fetchUnprocessedInputEventsStatement     = "SELECT id, event_type, client_id, color, is_input FROM client_event WHERE is_input AND NOT is_processed"
+	fetchNextUnprocessedOutputEventStatement = "SELECT id, event_type, client_id, color, is_input FROM client_event WHERE client_id = ? AND NOT is_input AND NOT is_processed LIMIT 1"
 )
 
 type EventEntity struct {
@@ -39,13 +39,28 @@ func GetUnprocessedInputEvents() ([]EventEntity, error) {
 	return entities, nil
 }
 
-func GetEvents(clientId string) ([]EventEntity, error) {
+func GetNextOutputEvent(clientId string) (*EventEntity, error) {
 	db, err := GetConnection()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
-	return make([]EventEntity, 0), nil
+
+	rows, err := db.Query(fetchNextUnprocessedOutputEventStatement, clientId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if rows.Next() {
+		var entity EventEntity
+		rowErr := rows.Scan(&entity.Id, &entity.EventType, &entity.ClientId, &entity.Color, &entity.IsInput)
+		if rowErr != nil {
+			return nil, rowErr
+		}
+		return &entity, nil
+	} else {
+		return nil, nil
+	}
 }
 
 func AddEvent(eventEntity EventEntity) error {
