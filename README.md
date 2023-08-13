@@ -37,3 +37,26 @@ $ openscad -o e.png egg.scad
 $ docker build . --tag nantipov/egg-build:latest
 $ docker push nantipov/egg-build:latest
 ```
+
+### Device software
+
+#### Flash Micropython
+
+#### Upload code
+
+Consider using [pyboard](https://docs.micropython.org/en/latest/reference/pyboard.py.html) utility.
+
+```shell
+$ python3 pyboard.py --device /dev/cu.usbmodem14101 --filesystem ls
+```
+
+``` shell
+nantipov@MBP-von-Nikolai egg %  python3 ~/tools/micropython/tools/pyboard.py --device /dev/cu.usbmodem14101 --filesystem cp client/core.py :/
+cp client/core.py :/
+nantipov@MBP-von-Nikolai egg %  python3 ~/tools/micropython/tools/pyboard.py --device /dev/cu.usbmodem14101 --filesystem cp client/main.py :/
+cp client/main.py :/
+```
+
+```shell
+python3 ~/tools/micropython/tools/pyboard.py --device /dev/cu.usbmodem14101 client/main.py
+```
