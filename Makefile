@@ -30,8 +30,9 @@ web:
 3d-models:
 	@echo ">>> Build 3D models"
 	$(OPENSCAD) -o hardware/body-model/egg_bottom.stl -D 'release=true' -D 'target="bottom"' hardware/body-model/egg.scad
-	$(OPENSCAD) -o hardware/body-model/egg_middle.stl -D 'release=true' -D 'target="middle"' hardware/body-model/egg.scad
-	$(OPENSCAD) -o hardware/body-model/egg_top.stl -D 'release=true' -D 'target="top"' hardware/body-model/egg.scad
+#	$(OPENSCAD) -o hardware/body-model/egg_middle.stl -D 'release=true' -D 'target="middle"' hardware/body-model/egg.scad
+#	$(OPENSCAD) -o hardware/body-model/egg_top.stl -D 'release=true' -D 'target="top"' hardware/body-model/egg.scad
+	$(OPENSCAD) -o hardware/body-model/egg_massive_top.stl -D 'release=true' -D 'target="massive_top"' hardware/body-model/egg.scad
 	$(OPENSCAD) -o hardware/body-model/egg_rack.stl -D 'release=true' -D 'target="rack"' hardware/body-model/egg.scad
 	$(OPENSCAD) -o docresources/egg-3d-model1.png -D 'target="composition"' \
 	            --camera '-18.91,-2.58,-0.98,90.70,0.00,202.80,292.71' \

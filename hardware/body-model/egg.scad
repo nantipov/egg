@@ -1,6 +1,6 @@
 
 /* --- settings --- */
-target = "top"; /* composition, composition2, bottom, middle, top, rack, egg, dev */
+target = "composition"; /* composition, composition2, bottom, middle, top, massive_top, rack, egg, dev */
 release = false;
 $fn = release ? 120 : 30;
 k = 1.0;
@@ -38,11 +38,16 @@ module main() {
                 color("orange")
                 egg_bottom();
                 
+                /*
                 color("cyan")
                 egg_middle();
                 
                 color("orange")
                 egg_top();
+                */
+                
+                color("orange")
+                egg_massive_top();
             }
             
             rotate(edge_wall_rotate_vec)
@@ -60,6 +65,10 @@ module main() {
     
     if (target == "middle") {
         egg_middle();
+    }
+    
+    if (target == "massive_top") {
+        egg_massive_top();
     }
     
     if (target == "top") {
@@ -228,6 +237,15 @@ module egg_middle() {
     }
     */
 }
+
+module egg_massive_top() {
+    difference() {
+        egg(length = egg_length, start = dh1);
+        
+        inner_egg();
+    }
+}
+
 
 module egg_top() {
     difference() {
