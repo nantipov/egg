@@ -1,6 +1,6 @@
 
 /* --- settings --- */
-target = "composition"; /* composition, composition2, bottom, middle, top, massive_top, rack, egg, dev */
+target = "bottom"; /* composition, composition2, bottom, middle, top, massive_top, rack, egg, dev */
 release = false;
 $fn = release ? 120 : 30;
 k = 1.0;
@@ -187,15 +187,15 @@ module egg_bottom() {
     */
 
     // connection skirt
-    connection_skirt_d = (egg_eq(-(egg_length - egg_wall_w)/2 + dh1, egg_length - egg_wall_w) - 0.5*k) * 2;
+    connection_skirt_d = (egg_eq(-(egg_length - egg_wall_w)/2 + dh1, egg_length - egg_wall_w) - 1*k) * 2;
     translate([0, 0, -egg_length/2 + dh1 - 1*k])
     difference() {
         
-        cylinder(h = 3*k, d = connection_skirt_d);
+        cylinder(h = 5*k, d = connection_skirt_d);
 
         // cut in center
         translate([0, 0, -1])
-        cylinder(h = 3*k+2, d = connection_skirt_d - 2*k);
+        cylinder(h = 5*k+2, d = connection_skirt_d - 2*k);
 
         translate([0, 0, -(-egg_length/2 + dh1 - 1*k)])
         outer_thick_egg(start = 0, end = dh1);
